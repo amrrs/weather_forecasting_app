@@ -16,6 +16,8 @@ require(shinydashboard)
 library(ggplot2)
 library(dplyr)
 
+setwd('/Users/amrs/weather_forecasting_app/weather_forecasting')
+
 recommendation <- read.csv('recommendation.csv',stringsAsFactors = F,header=T)
 
 weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
