@@ -93,6 +93,34 @@ server <- function(input, output) {
  
   
    
+  output$indiamap <- renderHighchart({
+    
+    cities <- data_frame(
+      name = c("London", "Birmingham", "Glasgow", "Liverpool"),
+      lat = c(51.507222, 52.483056,  55.858, 53.4),
+      lon = c(-0.1275, -1.893611, -4.259, -3),
+      z = c(1, 2, 3, 2)
+    )
+    
+    
+    
+    mapdata <- get_data_from_map(download_map_data("countries/in/in-all"))
+    #glimpse(mapdata)
+    
+    set.seed(1234)
+    
+    data_fake <- mapdata %>% 
+      select(code = `hc-a2`) %>% 
+      mutate(value = 1e5 * abs(rt(nrow(.), df = 10)))
+    
+    
+    hcmap("countries/in/in-all", data = data_fake, value = "value",
+          joinBy = c("hc-a2", "code"), name = "Fake data",
+          dataLabels = list(enabled = TRUE, format = '{point.name}'),
+          borderColor = "#FAFAFA", borderWidth = 0.1,
+          tooltip = list(valueDecimals = 2, valuePrefix = "$", valueSuffix = " USD")) 
+  })
+  
   
 }
 
