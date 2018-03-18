@@ -63,7 +63,6 @@ frow6 <- fluidRow(
   
 )
 
-
 # combine the two fluid rows to make the body
 body <- dashboardBody(frow1, frow2, frow5,frow6)
 
