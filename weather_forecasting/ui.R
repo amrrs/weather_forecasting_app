@@ -35,18 +35,17 @@ frow2 <- fluidRow(
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
     ,highchartOutput("revenuebyPrd", height = "300px")
-    ,width = 12
+    ,width = 6
   )
-)  
+   
 
-frow5 <- fluidRow(   
-  box(
+,box(
     title = "Rainfall Trend"
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
     ,plotOutput("revenuebyRegion", height = "300px")
-    ,width = 12
+    ,width = 6
   ) 
   
 )
@@ -64,7 +63,7 @@ frow6 <- fluidRow(
 )
 
 # combine the two fluid rows to make the body
-body <- dashboardBody(frow1, frow2, frow5,frow6)
+body <- dashboardBody(frow1, frow2, frow6)
 
 #completing the ui part with dashboardPage
 ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='red')
