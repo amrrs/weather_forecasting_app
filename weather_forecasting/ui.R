@@ -66,4 +66,4 @@ frow6 <- fluidRow(
 body <- dashboardBody(frow1, frow2, frow6)
 
 #completing the ui part with dashboardPage
-ui <- dashboardPage(title = 'This is my Page title', header, sidebar, body, skin='red')
+ui <- dashboardPage(title = 'Weather Forecasting App', header, sidebar, body, skin='red')
