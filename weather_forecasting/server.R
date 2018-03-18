@@ -73,15 +73,12 @@ server <- function(input, output) {
   
   #creating the plotOutput content
   
-  output$revenuebyPrd <- renderPlot({
-    ggplot(data = recommendation, 
-           aes(x=Product, y=Revenue, fill=factor(Region))) + 
-      geom_bar(position = "dodge", stat = "identity") + ylab("Revenue (in Euros)") + 
-      xlab("Product") + theme(legend.position="bottom" 
-                              ,plot.title = element_text(size=15, face="bold")) + 
-      ggtitle("Revenue by Product") + labs(fill = "Region")
+  output$revenuebyPrd <- renderHighchart({
+    ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
+    
+    hchart(ds,'line',hcaes(x = YEAR, y = sum_of_annual))
+    
   })
-  
   
   output$revenuebyRegion <- renderPlot({
     

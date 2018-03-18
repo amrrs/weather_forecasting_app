@@ -7,7 +7,7 @@ require(shinydashboard)
 
 
 #Dashboard header carrying the title of the dashboard
-header <- dashboardHeader(title = "Basic Dashboard")  
+header <- dashboardHeader(title = "Weather Forecast")  
 
 #Sidebar content of the dashboard
 sidebar <- dashboardSidebar(
@@ -34,7 +34,7 @@ frow2 <- fluidRow(
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
-    ,plotOutput("revenuebyPrd", height = "300px")
+    ,highchartOutput("revenuebyPrd", height = "300px")
   )
   
   ,box(
