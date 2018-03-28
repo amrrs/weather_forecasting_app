@@ -5,7 +5,6 @@ library(highcharter)
 
 require(shinydashboard)
 
-
 #Dashboard header carrying the title of the dashboard
 header <- dashboardHeader(title = "Weather Forecast")  
 
