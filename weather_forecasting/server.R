@@ -183,15 +183,15 @@ server <- function(input, output) {
     
     library(forecast)
     
-    model <- HoltWinters(train)
+    #model <- HoltWinters(train)
     
-    plot(model)
+    #plot(model)
     
-    forecasts <- forecast(model,12)
+    #forecasts <- forecast(model,12)
     
-    mean(abs((forecasts$mean - test)/test))
+    #mean(abs((forecasts$mean - test)/test))
     
-    library(forecast)
+    #library(forecast)
     
     h = 12
     
@@ -209,9 +209,44 @@ server <- function(input, output) {
     
     ts_seasonal(total,type = 'normal')
     
+    #ts_heatmap(total)
+    
   })
   
-   
+  
+  output$heatmap1 <- renderPlotly({
+    
+    #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
+    
+    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
+    
+    
+    tn_months <- tn %>% select('YEAR', toupper( month.abb))
+    
+    dummy.df <- tn_months 
+    
+    dummy.df <- melt(tn_months, id.vars = "YEAR")
+    
+    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
+                             format = ("%Y-%b-%d"))
+    dummy.df <- dummy.df[order(dummy.df$Date), ]
+    
+    #View(dummy.df)
+    
+    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
+    
+    ts_seasonal(dummy.df.ts)
+    
+    total <- dummy.df.ts
+    
+    train <- window(total, start = c(1990,01),end = c(2014,12))
+    
+    test <- window(total, start = c(2015,01))
+    
+    ts_heatmap(total)
+    
+  })
+  
   output$indiamap <- renderHighchart({
     
     cities <- data_frame(

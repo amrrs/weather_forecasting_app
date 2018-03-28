@@ -5,6 +5,12 @@ library(highcharter)
 
 require(shinydashboard)
 
+library(shinycssloaders)
+
+options(spinner.color="#0dc5c1")
+
+options(spinner.type = 8)
+
 #Dashboard header carrying the title of the dashboard
 header <- dashboardHeader(title = "Weather Forecast")  
 
@@ -13,7 +19,7 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
     menuItem("Visit-us", icon = icon("send",lib='glyphicon'), 
-             href = "https://www.salesforce.com")
+             href = "https://www.gct.ac.in")
   )
 )
 
@@ -33,9 +39,19 @@ frow2 <- fluidRow(
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
-    ,highchartOutput("revenuebyPrd", height = "300px")
+    ,highchartOutput("revenuebyPrd", height = "300px") %>% withSpinner()
     ,width = 12
-  )
+  ),
+  
+  box(
+    title = "Rainfall in Map"
+    ,status = "primary"
+    ,solidHeader = TRUE 
+    ,collapsible = TRUE 
+    ,plotlyOutput("heatmap1") %>% withSpinner()
+    ,width = 12
+  ) 
+  
 )   
 
 frow3 <- fluidRow(
@@ -44,7 +60,7 @@ box(
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
-    ,plotlyOutput("seasonalplot1", height = "300px")
+    ,plotlyOutput("seasonalplot1", height = "300px") %>% withSpinner()
     ,width = 12
   ) 
   
@@ -58,7 +74,7 @@ frow4 <- fluidRow(
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
-    ,plotlyOutput("revenuebyRegion", height = "300px")
+    ,plotlyOutput("revenuebyRegion", height = "300px") %>% withSpinner()
     ,width = 12
   ) 
   
@@ -67,12 +83,14 @@ frow4 <- fluidRow(
 
 
 frow6 <- fluidRow(   
+  
+
   box(
     title = "Rainfall in Map"
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
-    ,highchartOutput("indiamap")
+    ,highchartOutput("indiamap") %>% withSpinner()
     ,width = 12
   ) 
   
