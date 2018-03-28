@@ -34,20 +34,37 @@ frow2 <- fluidRow(
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
     ,highchartOutput("revenuebyPrd", height = "300px")
-    ,width = 6
+    ,width = 12
   )
-   
+)   
 
-,box(
-    title = "Rainfall Trend"
+frow3 <- fluidRow(
+box(
+    title = "Rainfall Seasonal Trend"
     ,status = "primary"
     ,solidHeader = TRUE 
     ,collapsible = TRUE 
-    ,plotOutput("revenuebyRegion", height = "300px")
-    ,width = 6
+    ,plotlyOutput("seasonalplot1", height = "300px")
+    ,width = 12
   ) 
   
 )
+
+
+frow4 <- fluidRow(
+  
+  box(
+    title = "Rainfall Forecast"
+    ,status = "primary"
+    ,solidHeader = TRUE 
+    ,collapsible = TRUE 
+    ,plotlyOutput("revenuebyRegion", height = "300px")
+    ,width = 12
+  ) 
+  
+)
+
+
 
 frow6 <- fluidRow(   
   box(
@@ -62,7 +79,7 @@ frow6 <- fluidRow(
 )
 
 # combine the two fluid rows to make the body
-body <- dashboardBody(frow1, frow2, frow6)
+body <- dashboardBody(frow1, frow2, frow3, frow4, frow6)
 
 #completing the ui part with dashboardPage
 ui <- dashboardPage(title = 'Weather Forecasting App', header, sidebar, body, skin='red')

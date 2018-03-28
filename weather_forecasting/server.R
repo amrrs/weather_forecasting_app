@@ -9,12 +9,18 @@
 
 library(shiny)
 library(dplyr)
+library(plotly)
 
 library(highcharter)
 
 require(shinydashboard)
 library(ggplot2)
 library(dplyr)
+library("reshape2")
+#install.packages('TSstudio')
+
+library(TSstudio)
+
 
 setwd('/Users/amrs/weather_forecasting_app/weather_forecasting')
 
@@ -82,17 +88,128 @@ server <- function(input, output) {
     
   })
   
-  output$revenuebyRegion <- renderPlot({
+  output$revenuebyRegion <- renderPlotly({
     
-    ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
-    ggplot(data = ds, aes(x=YEAR, y=sum_of_annual)) + 
-      geom_line() + ylab("Sum of Annual Rainfall") + 
-      xlab("Account") + theme(legend.position="bottom" 
-                              ,plot.title = element_text(size=15, face="bold")) + 
-      ggtitle(paste0('Rainall of ',input$state1)) 
+    #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
+    
+    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
+    
+    
+    tn_months <- tn %>% select('YEAR', toupper( month.abb))
+    
+    dummy.df <- tn_months 
+    
+    dummy.df <- melt(tn_months, id.vars = "YEAR")
+    
+    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
+                             format = ("%Y-%b-%d"))
+    dummy.df <- dummy.df[order(dummy.df$Date), ]
+    
+    #View(dummy.df)
+    
+    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
+    
+    ts_seasonal(dummy.df.ts)
+    
+    total <- dummy.df.ts
+    
+    train <- window(total, start = c(1990,01),end = c(2014,12))
+    
+    test <- window(total, start = c(2015,01))
+    
+    
+    library(forecast)
+    
+    model <- HoltWinters(train)
+    
+    plot(model)
+    
+    forecasts <- forecast(model,12)
+    
+    mean(abs((forecasts$mean - test)/test))
+    
+    library(forecast)
+    
+    h = 12
+    
+    total2 <- window(total, start = c(1980,01))
+    
+    split_ts <- ts_split(total2, sample.out = h)
+    
+    train <- split_ts$train
+    test <- split_ts$test
+    
+    
+    #m2 <- auto.arima(train, stepwise = F)
+    
+    m2 = nnetar(train)
+    
+    f2 <- forecast(m2, h = h)
+    
+    test_forecast(actual = total2, forecast.obj = f2, train = train, test = test)
+    
   })
   
  
+  output$seasonalplot1 <- renderPlotly({
+    
+    #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
+    
+    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
+    
+    
+    tn_months <- tn %>% select('YEAR', toupper( month.abb))
+    
+    dummy.df <- tn_months 
+    
+    dummy.df <- melt(tn_months, id.vars = "YEAR")
+    
+    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
+                             format = ("%Y-%b-%d"))
+    dummy.df <- dummy.df[order(dummy.df$Date), ]
+    
+    #View(dummy.df)
+    
+    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
+    
+    ts_seasonal(dummy.df.ts)
+    
+    total <- dummy.df.ts
+    
+    train <- window(total, start = c(1990,01),end = c(2014,12))
+    
+    test <- window(total, start = c(2015,01))
+    
+    
+    library(forecast)
+    
+    model <- HoltWinters(train)
+    
+    plot(model)
+    
+    forecasts <- forecast(model,12)
+    
+    mean(abs((forecasts$mean - test)/test))
+    
+    library(forecast)
+    
+    h = 12
+    
+    total2 <- window(total, start = c(1980,01))
+    
+    split_ts <- ts_split(total2, sample.out = h)
+    
+    train <- split_ts$train
+    test <- split_ts$test
+    
+    
+    f1 <- snaive(train, h = h)
+    
+    #test_forecast(actual = total2, forecast.obj = f1, train = train, test = test)
+    
+    ts_seasonal(total,type = 'normal')
+    
+  })
   
    
   output$indiamap <- renderHighchart({
