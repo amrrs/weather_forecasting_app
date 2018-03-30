@@ -1,0 +1,10 @@
+name: weather_forecasting
+title:
+username:
+account: amrrs
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 311685
+bundleId: 1294804
+url: https://amrrs.shinyapps.io/weather_forecasting/
+when: 1522412297.94934

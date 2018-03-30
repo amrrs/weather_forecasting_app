@@ -26,7 +26,15 @@ library(TSstudio)
 
 recommendation <- read.csv('recommendation.csv',stringsAsFactors = F,header=T)
 
-weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
+#weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
+
+weather <- read.csv('districtwise1901_to_2002.csv', stringsAsFactors = F, header = T)
+
+
+weather <- na.omit(weather)
+
+weather$all <- sum(weather[,4:15])
+### remove outliers
 
 
 # create the server functions for the dashboard  
@@ -35,28 +43,34 @@ server <- function(input, output) {
   #primary dropdown to select state
   
   output$state <- renderUI({
-    selectInput('state1','State',choices = unique(weather$SUBDIVISION),selected = 1)
+    selectInput('state1','State',choices = unique(weather$State),selected = 1)
   })
   
-  #some data manipulation to derive the values of KPI boxes
-  total.revenue <- sum(recommendation$Revenue)
-  sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-  prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
+  
+  
+  #next dropdown to select district
+  output$district <- renderUI({
+    selectInput("district1", "District", choices = as.character(weather[weather$State==input$state1,"District"]),selected = 1)
+  })
+  
   
   
   total <- reactive({
     
-    weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
+   # weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
+    
+    weather <- read.csv('districtwise1901_to_2002.csv', stringsAsFactors = F, header = T)
     
     
-    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
+    tn <- weather %>% filter(State %in% input$state1) %>% 
+      filter(District %in% input$district1)
     
     
-    tn_months <- tn %>% select('YEAR', toupper( month.abb))
+    tn_months <- tn %>% select('Year',(month.abb))
     
     dummy.df <- tn_months 
     
-    dummy.df <- melt(tn_months, id.vars = "YEAR")
+    dummy.df <- melt(tn_months, id.vars = "Year")
     
     dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
                              format = ("%Y-%b-%d"))
@@ -75,11 +89,18 @@ server <- function(input, output) {
   })
   
   
+  
+  
+  #some data manipulation to derive the values of KPI boxes
+  total.revenue <-  recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
+  sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
+  prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
+  
   #creating the valueBoxOutput content
   output$value1 <- renderValueBox({
     valueBox(
-      formatC(sales.account$value, format="d", big.mark=',')
-      ,paste('Average yearly Rainfall:', input$state1)
+      formatC(33.5, format="d", big.mark=',')
+      ,paste('Average yearly Rainfall:', input$district1)
       ,icon = icon("stats",lib='glyphicon')
       ,color = "purple")
     
@@ -91,8 +112,8 @@ server <- function(input, output) {
   output$value2 <- renderValueBox({
     
     valueBox(
-      formatC(total.revenue, format="d", big.mark=',')
-      ,'Total Expected Rainfall'
+      formatC(35.5, format="d", big.mark=',')
+      ,paste('Total Expected Rainfall',input$district1)
       ,icon = icon("stats",lib='glyphicon')
       ,color = "green")
     
@@ -103,8 +124,8 @@ server <- function(input, output) {
   output$value3 <- renderValueBox({
     
     valueBox(
-      formatC(prof.prod$value, format="d", big.mark=',')
-      ,paste('Past Rainfall:',prof.prod$Product)
+      formatC(33.7, format="d", big.mark=',')
+      ,paste('Past Rainfall:', input$district1)
       ,icon = icon("stats",lib='glyphicon')
       ,color = "yellow")
     
@@ -113,9 +134,10 @@ server <- function(input, output) {
   #creating the plotOutput content
   
   output$revenuebyPrd <- renderHighchart({
-    ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
+    ds <- weather %>% filter(State %in% input$state1) %>% 
+      filter(District %in% input$district1) %>% group_by(Year) %>% summarise(sum_of_annual = sum(Jan))
     
-    hchart(ds,'line',hcaes(x = YEAR, y = sum_of_annual))
+    hchart(ds,'line',hcaes(x = Year, y = sum_of_annual))
     
   })
   
@@ -169,7 +191,50 @@ server <- function(input, output) {
     
   })
   
- 
+  output$ets <- renderPlotly({
+    
+    #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
+    
+    total <- total()
+    
+    train <- window(total, start = c(1990,01),end = c(2014,12))
+    
+    test <- window(total, start = c(2015,01))
+    
+    
+    library(forecast)
+    
+    model <- ets(train)
+    
+    plot(model)
+    
+    forecasts <- forecast(model,12)
+    
+    mean(abs((forecasts$mean - test)/test))
+    
+    library(forecast)
+    
+    h = 12
+    
+    total2 <- window(total, start = c(1980,01))
+    
+    split_ts <- ts_split(total2, sample.out = h)
+    
+    train <- split_ts$train
+    test <- split_ts$test
+    
+   
+    m3 <- auto.arima(train)
+    
+    f3 <- forecast(m3, h = h)
+    
+    
+    test_forecast(actual = total2, forecast.obj = f3, train = train, test = test)
+    
+    
+    
+  })
+  
   output$seasonalplot1 <- renderPlotly({
     
     #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
