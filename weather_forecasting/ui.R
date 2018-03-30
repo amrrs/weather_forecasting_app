@@ -1,11 +1,9 @@
 library(shiny)
 library(dplyr)
-
 library(highcharter)
-
 require(shinydashboard)
-
 library(shinycssloaders)
+library(plotly)
 
 options(spinner.color="#0dc5c1")
 

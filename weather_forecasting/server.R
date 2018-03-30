@@ -22,7 +22,7 @@ library("reshape2")
 library(TSstudio)
 
 
-setwd('/Users/amrs/weather_forecasting_app/weather_forecasting')
+#setwd('/Users/amrs/weather_forecasting_app/weather_forecasting')
 
 recommendation <- read.csv('recommendation.csv',stringsAsFactors = F,header=T)
 
@@ -44,11 +44,42 @@ server <- function(input, output) {
   prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
   
   
+  total <- reactive({
+    
+    weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
+    
+    
+    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
+    
+    
+    tn_months <- tn %>% select('YEAR', toupper( month.abb))
+    
+    dummy.df <- tn_months 
+    
+    dummy.df <- melt(tn_months, id.vars = "YEAR")
+    
+    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
+                             format = ("%Y-%b-%d"))
+    dummy.df <- dummy.df[order(dummy.df$Date), ]
+    
+    #View(dummy.df)
+    
+    
+    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
+    
+    ts_seasonal(dummy.df.ts)
+    
+    total <- dummy.df.ts
+    
+    total
+  })
+  
+  
   #creating the valueBoxOutput content
   output$value1 <- renderValueBox({
     valueBox(
       formatC(sales.account$value, format="d", big.mark=',')
-      ,paste('Top Account:',sales.account$Account)
+      ,paste('Average yearly Rainfall:', input$state1)
       ,icon = icon("stats",lib='glyphicon')
       ,color = "purple")
     
@@ -61,8 +92,8 @@ server <- function(input, output) {
     
     valueBox(
       formatC(total.revenue, format="d", big.mark=',')
-      ,'Total Expected Revenue'
-      ,icon = icon("gbp",lib='glyphicon')
+      ,'Total Expected Rainfall'
+      ,icon = icon("stats",lib='glyphicon')
       ,color = "green")
     
   })
@@ -73,8 +104,8 @@ server <- function(input, output) {
     
     valueBox(
       formatC(prof.prod$value, format="d", big.mark=',')
-      ,paste('Top Product:',prof.prod$Product)
-      ,icon = icon("menu-hamburger",lib='glyphicon')
+      ,paste('Past Rainfall:',prof.prod$Product)
+      ,icon = icon("stats",lib='glyphicon')
       ,color = "yellow")
     
   })
@@ -92,26 +123,7 @@ server <- function(input, output) {
     
     #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
     
-    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
-    
-    
-    tn_months <- tn %>% select('YEAR', toupper( month.abb))
-    
-    dummy.df <- tn_months 
-    
-    dummy.df <- melt(tn_months, id.vars = "YEAR")
-    
-    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
-                             format = ("%Y-%b-%d"))
-    dummy.df <- dummy.df[order(dummy.df$Date), ]
-    
-    #View(dummy.df)
-    
-    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
-    
-    ts_seasonal(dummy.df.ts)
-    
-    total <- dummy.df.ts
+    total <- total()
     
     train <- window(total, start = c(1990,01),end = c(2014,12))
     
@@ -142,11 +154,18 @@ server <- function(input, output) {
     
     #m2 <- auto.arima(train, stepwise = F)
     
-    m2 = nnetar(train)
+    m2 <- nnetar(train)
     
     f2 <- forecast(m2, h = h)
     
+    m3 <- ets(train)
+    
+    f3 <- forecast(m3, h = h)
+    
+    
     test_forecast(actual = total2, forecast.obj = f2, train = train, test = test)
+    
+    
     
   })
   
@@ -155,33 +174,14 @@ server <- function(input, output) {
     
     #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
     
-    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
-    
-    
-    tn_months <- tn %>% select('YEAR', toupper( month.abb))
-    
-    dummy.df <- tn_months 
-    
-    dummy.df <- melt(tn_months, id.vars = "YEAR")
-    
-    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
-                             format = ("%Y-%b-%d"))
-    dummy.df <- dummy.df[order(dummy.df$Date), ]
-    
-    #View(dummy.df)
-    
-    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
-    
-    ts_seasonal(dummy.df.ts)
-    
-    total <- dummy.df.ts
+    total <- total()
     
     train <- window(total, start = c(1990,01),end = c(2014,12))
     
     test <- window(total, start = c(2015,01))
     
     
-    library(forecast)
+   # library(forecast)
     
     #model <- HoltWinters(train)
     
@@ -203,7 +203,7 @@ server <- function(input, output) {
     test <- split_ts$test
     
     
-    f1 <- snaive(train, h = h)
+    #f1 <- snaive(train, h = h)
     
     #test_forecast(actual = total2, forecast.obj = f1, train = train, test = test)
     
@@ -218,26 +218,7 @@ server <- function(input, output) {
     
     #ds <- weather %>% filter(SUBDIVISION %in% input$state1) %>% group_by(SUBDIVISION,YEAR) %>% summarise(sum_of_annual = sum(ANNUAL))
     
-    tn <- weather %>% filter(SUBDIVISION %in% input$state1)
-    
-    
-    tn_months <- tn %>% select('YEAR', toupper( month.abb))
-    
-    dummy.df <- tn_months 
-    
-    dummy.df <- melt(tn_months, id.vars = "YEAR")
-    
-    dummy.df$Date <- as.Date(paste(dummy.df$YEAR, dummy.df$variable, "01", sep = "-"),
-                             format = ("%Y-%b-%d"))
-    dummy.df <- dummy.df[order(dummy.df$Date), ]
-    
-    #View(dummy.df)
-    
-    dummy.df.ts <- ts(dummy.df$value, start=c(1901,1), end=c(2015,12), frequency=12)
-    
-    ts_seasonal(dummy.df.ts)
-    
-    total <- dummy.df.ts
+    total <- total()
     
     train <- window(total, start = c(1990,01),end = c(2014,12))
     
