@@ -21,10 +21,10 @@ library("reshape2")
 
 library(TSstudio)
 
+library(googlesheets)
+
 
 #setwd('/Users/amrs/weather_forecasting_app/weather_forecasting')
-
-recommendation <- read.csv('recommendation.csv',stringsAsFactors = F,header=T)
 
 #weather <- read.csv('rainfall in india 1901-2015.csv', stringsAsFactors = F, header = T)
 
@@ -65,6 +65,10 @@ server <- function(input, output) {
     tn <- weather %>% filter(State %in% input$state1) %>% 
       filter(District %in% input$district1)
     
+    tn <- weather %>% filter(State %in% 'Tamil Nadu') %>% 
+      filter(District %in% 'Ariyalur')
+    
+    
     
     tn_months <- tn %>% select('Year',(month.abb))
     
@@ -91,16 +95,11 @@ server <- function(input, output) {
   
   
   
-  #some data manipulation to derive the values of KPI boxes
-  total.revenue <-  recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-  sales.account <- recommendation %>% group_by(Account) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-  prof.prod <- recommendation %>% group_by(Product) %>% summarise(value = sum(Revenue)) %>% filter(value==max(value))
-  
   #creating the valueBoxOutput content
   output$value1 <- renderValueBox({
     valueBox(
-      formatC(33.5, format="d", big.mark=',')
-      ,paste('Average yearly Rainfall:', input$district1)
+      formatC(paste0(round(mean(total()),3),' mm'), format="d", big.mark=',')
+      ,paste('Average Monthly Rainfall in 100 yrs')
       ,icon = icon("stats",lib='glyphicon')
       ,color = "purple")
     
@@ -112,8 +111,8 @@ server <- function(input, output) {
   output$value2 <- renderValueBox({
     
     valueBox(
-      formatC(35.5, format="d", big.mark=',')
-      ,paste('Total Expected Rainfall',input$district1)
+      formatC(paste0(month.abb[(time(total())[which.max(total())] %% 1)*12+1],"-",floor(time(total())[which.max(total())])), format="d", big.mark=',')
+      ,paste('Maximum Rainfall Time')
       ,icon = icon("stats",lib='glyphicon')
       ,color = "green")
     
@@ -124,8 +123,8 @@ server <- function(input, output) {
   output$value3 <- renderValueBox({
     
     valueBox(
-      formatC(33.7, format="d", big.mark=',')
-      ,paste('Past Rainfall:', input$district1)
+      formatC(paste0(round(max(total()),3), " mm"), format="d", big.mark=',')
+      ,paste('Max Rainfall in 100 yrs')
       ,icon = icon("stats",lib='glyphicon')
       ,color = "yellow")
     
@@ -184,6 +183,22 @@ server <- function(input, output) {
     
     f3 <- forecast(m3, h = h)
     
+    result <- data.frame(District = input$district1, 
+                         State = input$state1,
+                         Forecast = (0.2 * f3$mean + 0.8 * f2$mean)/2 )
+    
+    ### save googlesheets in csv
+    
+    token <- readRDS('oken.rds') 
+    
+    gs_auth(token = token)
+    
+    
+    forc <- gs_title('worksheet_forecast')
+    
+    
+    forc %>% gs_edit_cells(ws='Sheet1', input=result, anchor="A1")
+    
     
     test_forecast(actual = total2, forecast.obj = f2, train = train, test = test)
     
@@ -227,6 +242,8 @@ server <- function(input, output) {
     m3 <- auto.arima(train)
     
     f3 <- forecast(m3, h = h)
+    
+    
     
     
     test_forecast(actual = total2, forecast.obj = f3, train = train, test = test)

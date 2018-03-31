@@ -106,7 +106,7 @@ frow6 <- fluidRow(
 )
 
 # combine the two fluid rows to make the body
-body <- dashboardBody(theme_blue_gradient, frow0, frow1, frow2, frow3, frow4, frow6)
+body <- dashboardBody(theme_blue_gradient, frow0, frow1, frow2, frow3, frow4)
 
 #completing the ui part with dashboardPage
 ui <- dashboardPage(title = 'Rainfall Forecasting App', header, sidebar, body)
