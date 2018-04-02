@@ -65,8 +65,8 @@ server <- function(input, output) {
     tn <- weather %>% filter(State %in% input$state1) %>% 
       filter(District %in% input$district1)
     
-    tn <- weather %>% filter(State %in% 'Tamil Nadu') %>% 
-      filter(District %in% 'Ariyalur')
+   # tn <- weather %>% filter(State %in% 'Tamil Nadu') %>% 
+  #    filter(District %in% 'Ariyalur')
     
     
     
