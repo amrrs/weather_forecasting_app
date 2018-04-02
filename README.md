@@ -20,6 +20,8 @@
 * `library(googlesheets)`
 * `library(dashboardthemes)`
 
+### Package Installation:
+
 If `shiny` package is missing, Use `install.packages('shiny')` to install `shiny` package. Similarly for other missing packages, except `dashboardthemes` which isn't available on CRAN yet. Install `dashboardthemes` using the following code:
 
 ```
@@ -27,6 +29,7 @@ library(devtools)
 install_github("nik01010/dashboardthemes")
 
 ```
+### Deployed Link:
 
 **Hosted** @ [shinyapps.io](https://amrrs.shinyapps.io/weather_forecasting/)
 
