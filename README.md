@@ -9,26 +9,18 @@ Running via Github: `runGitHub('amrrs/weather_forecasting_app')`
 ### Packages required:
 
 * `library(shiny)`
-
 * `library(plotly)`
-
 * `library(highcharter)`
-
 * `library(shinydashboard)`
-
 * `library(ggplot2)`
-
 * `library(dplyr)`
-
 * `library(reshape2)`
-
 * `library(TSstudio)`
-
 * `library(forecast)`
 
 If `shiny` package is missing, Use `install.packages('shiny')` to install `shiny` package. Similarly for other missing packages.
 
-Hosted @ [shinyapps.io](https://amrrs.shinyapps.io/weather_forecasting/)
+**Hosted** @ [shinyapps.io](https://amrrs.shinyapps.io/weather_forecasting/)
 
 Sample Screenshot:
 
