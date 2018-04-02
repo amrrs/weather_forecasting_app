@@ -10,17 +10,13 @@
 library(shiny)
 library(dplyr)
 library(plotly)
-
 library(highcharter)
-
 require(shinydashboard)
 library(ggplot2)
 library(dplyr)
 library("reshape2")
 #install.packages('TSstudio')
-
 library(TSstudio)
-
 library(googlesheets)
 
 
