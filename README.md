@@ -17,6 +17,7 @@ Running via Github: `runGitHub('amrrs/weather_forecasting_app')`
 * `library(reshape2)`
 * `library(TSstudio)`
 * `library(forecast)`
+* `library(googlesheets)`
 
 If `shiny` package is missing, Use `install.packages('shiny')` to install `shiny` package. Similarly for other missing packages.
 
